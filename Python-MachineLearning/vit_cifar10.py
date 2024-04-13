@@ -35,3 +35,48 @@ class Patches(layers.Layer):
 
 class PatchEncoder(layers.Layer):
     def __init__(self, p2, d_model):
+        super(PatchEncoder).__init__()
+        self.p2 = p2,
+        self.projection = layers.Dense(units=d_model)
+        self.position_embedding = layers.Embedding(input_dim=p2, output_dim=d_model)
+
+    def call(self, patch):
+        positions=tf.range(start=0, 
+                           limit=self.p2, 
+                           delta=1)
+        encoded=self.projection(patch) + self.position_embedding(positions)
+        return encoded
+
+def create_vit_classifier():
+    input = layers.Input(shape=(img_size))
+    nor = layers.Normalization()(input)
+
+    patches = Patches(patch_size)(nor)
+    x = PatchEncoder(p2, d_model)(patches)
+
+    for _ in range(N):
+        x1 = layers.LayerNormalization(epsilon=1e-6)(x)
+        x2 = layers.MultiHeadAttention(num_heads=h, 
+                                       key_dim=d_model//h,
+                                       dropout=0.1)(x1, x1)
+        x3 = layers.Add()([x2, x])
+        x4 = layers.LayerNormalization(apsilon=1e-6)(x3)
+        x5 = layers.Dense(d_model*2, activation=tf.nn.gelu)(x4)
+        x6 = layers.Dropout(0.1)(x5)
+        x7 = layers.Dense(d_model, activation=tf.nn.gelu)(x6)
+        x8 = layers.Dropout(0.1)(x7)
+        x = layers.Add()([x8, x3])
+    x = layers.LayerNormalization(epsilon=1e-6)(x)
+    x = layers.Flatten()(x)
+    x = layers.Dropout()(x)
+
+    x = layers.Dense(2048, activation=tf.nn.gelu)(x)
+    x = layers.Dropout(0.5)(x)
+
+    x = layers.Dense(1024, activation=tf.nn.gelu)(x)
+    x = layers.Dropout(0.5)(x)
+
+    output = layers.Dense(n_class, activation='softmax')
+
+    model = keras.Model(inputs = input, outputs = output)
+    return model
