@@ -4,13 +4,13 @@ from keras import layers
 from keras.losses import SparseCategoricalCrossentropy
 from keras.optimizers import Adam
 
-(x_train, y_train), (x_train, y_test) = keras.datasets.cifar10.load_data()
+(x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
 
 n_class = 10
 img_size = (32, 32, 3)
 
 patch_size = 4
-p2=(img_size[0]//patch_size)**2
+p2 = (img_size[0] // patch_size) ** 2
 
 d_model = 64
 h, N = 8, 6
@@ -20,7 +20,6 @@ class Patches(layers.Layer):
         super(Patches, self).__init__()
         self.p_siz = patch_size
 
-
     def call(self, img):
         batch_size = tf.shape(img)[0]
         patches = tf.image.extract_patches(images=img, 
@@ -28,55 +27,57 @@ class Patches(layers.Layer):
                                            strides=[1, self.p_siz, self.p_siz, 1],
                                            rates=[1, 1, 1, 1],
                                            padding="VALID")
-        patch_dims=patches.shape[-1]
-        patches=tf.reshape(patches, [batch_size, -1, patch_dims])
+        patch_dims = patches.shape[-1]
+        patches = tf.reshape(patches, [batch_size, -1, patch_dims])
         return patches
 
 
 class PatchEncoder(layers.Layer):
     def __init__(self, p2, d_model):
-        super(PatchEncoder).__init__()
-        self.p2 = p2,
+        super(PatchEncoder, self).__init__()
+        self.p2 = p2
         self.projection = layers.Dense(units=d_model)
         self.position_embedding = layers.Embedding(input_dim=p2, output_dim=d_model)
 
     def call(self, patch):
-        positions=tf.range(start=0, 
-                           limit=self.p2, 
-                           delta=1)
-        encoded=self.projection(patch) + self.position_embedding(positions)
+        positions = tf.range(start=0, limit=self.p2, delta=1)
+        encoded = self.projection(patch) + self.position_embedding(positions)
         return encoded
 
 def create_vit_classifier():
-    input = layers.Input(shape=(img_size))
+    input = layers.Input(shape=img_size)
     nor = layers.Normalization()(input)
-
     patches = Patches(patch_size)(nor)
     x = PatchEncoder(p2, d_model)(patches)
 
     for _ in range(N):
         x1 = layers.LayerNormalization(epsilon=1e-6)(x)
-        x2 = layers.MultiHeadAttention(num_heads=h, 
-                                       key_dim=d_model//h,
-                                       dropout=0.1)(x1, x1)
+        x2 = layers.MultiHeadAttention(num_heads=h, key_dim=d_model // h, dropout=0.1)(x1, x1)
         x3 = layers.Add()([x2, x])
-        x4 = layers.LayerNormalization(apsilon=1e-6)(x3)
-        x5 = layers.Dense(d_model*2, activation=tf.nn.gelu)(x4)
+        x4 = layers.LayerNormalization(epsilon=1e-6)(x3)
+        x5 = layers.Dense(d_model * 2, activation=tf.nn.gelu)(x4)
         x6 = layers.Dropout(0.1)(x5)
         x7 = layers.Dense(d_model, activation=tf.nn.gelu)(x6)
         x8 = layers.Dropout(0.1)(x7)
         x = layers.Add()([x8, x3])
+
     x = layers.LayerNormalization(epsilon=1e-6)(x)
     x = layers.Flatten()(x)
-    x = layers.Dropout()(x)
-
+    x = layers.Dropout(0.1)(x)
     x = layers.Dense(2048, activation=tf.nn.gelu)(x)
     x = layers.Dropout(0.5)(x)
-
     x = layers.Dense(1024, activation=tf.nn.gelu)(x)
     x = layers.Dropout(0.5)(x)
+    output = layers.Dense(n_class, activation='softmax')(x)
 
-    output = layers.Dense(n_class, activation='softmax')
-
-    model = keras.Model(inputs = input, outputs = output)
+    model = keras.Model(inputs=input, outputs=output)
     return model
+
+model = create_vit_classifier()
+model.layers[1].adapt(x_train)  # Normalization layer에 adapt 적용
+
+model.compile(optimizer=Adam(),
+              loss=SparseCategoricalCrossentropy(from_logits=False),
+              metrics=['accuracy'])
+
+model.summary()
