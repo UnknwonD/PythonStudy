@@ -80,4 +80,6 @@ model.compile(optimizer=Adam(),
               loss=SparseCategoricalCrossentropy(from_logits=False),
               metrics=['accuracy'])
 
-model.summary()
+# model.summary()
+
+hist = model.fit(x_train, y_train, batch_size=128, epochs=100)
