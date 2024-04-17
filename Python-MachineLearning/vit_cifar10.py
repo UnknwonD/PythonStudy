@@ -82,4 +82,27 @@ model.compile(optimizer=Adam(),
 
 # model.summary()
 
-hist = model.fit(x_train, y_train, batch_size=128, epochs=100)
+hist = model.fit(x_train, y_train, batch_size=128, epochs=100, validation_data = (x_test, y_test), verbose=1)
+
+res = model.evaluate(x_test, y_test, verbose=0)
+print(f"정확률 {res[1]*100}")
+
+import matplotlib.pyplot as plt
+
+plt.plot(hist.history['accuracy'])
+plt.plot(hist.history['val_accuracy'])
+plt.title('Accuracy graph')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend(['Train', 'Validation'])
+plt.grid()
+plt.show()
+
+plt.plot(hist.history['loss'])
+plt.plot(hist.history['val_loss'])
+plt.title('Loss graph')
+plt.xlabel('Loss')
+plt.ylabel('Epochs')
+plt.legend(['Train', 'Validation'])
+plt.grid()
+plt.show()
