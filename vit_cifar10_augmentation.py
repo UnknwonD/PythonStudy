@@ -52,7 +52,7 @@ def create_vit_classifier():
 
     x = layers.RandomFlip('horizontal')(exp)
     x = layers.RandomRotation(factor=0.02)(x)
-    x = layers.RandomZoom(height_factor=0.2, width_factor=0.2)
+    x = layers.RandomZoom(height_factor=0.2, width_factor=0.2)(x)
 
     patches = Patches(patch_size)(x)
     x = PatchEncoder(p2, d_model)(patches)
