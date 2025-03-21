@@ -5,7 +5,7 @@ K = int(input()) # 사과의 개수
 
 for _ in range(K):
     row, col = map(int, input().split())
-    mat[row][col] = 1
+    mat[row-1][col-1] = 1
 mat[0][0] = -1 # 시작위치
 
 L = int(input())
@@ -43,7 +43,7 @@ body.append((0, 0))
 while True:
     pos = move(pos, now_dir)
     time += 1
-    print(f"시간 : {time}, 현재 위치 : {pos}, 방향 : {now_dir}")
+    print(f"시간 : {time}, 현재 위치 : {pos}, 방향 : {now_dir}, 몸길이 : {len(body)}")
 
     # 게임 오버 확인
     if (0 > pos[0]) or (len(mat)-1 < pos[0]) or (0 > pos[1]) or (len(mat[0])-1 < pos[1]): # 맵 이탈
@@ -64,6 +64,8 @@ while True:
         body.append(pos)
         mat[pos[0]][pos[1]] = -1
         
-    if len(senario) != 0 and senario[-1][0] == time:
-        _, new_dir = senario.pop()
+    if (len(senario) != 0) and (senario[-1][0] == time):
+        nt, new_dir = senario.pop()
         now_dir = change_dir(now_dir, new_dir)
+
+        print(f"방향 전환 : 시점 {nt}, 다음 방향 {new_dir}, 바뀐 방향 {now_dir}")
