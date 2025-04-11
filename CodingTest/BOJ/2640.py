@@ -2,7 +2,7 @@ def count_color(cur, length, color):
     start = cur
     end = (cur[0] + length-1, cur[1] + length-1)
 
-    now = graph[start[0]:end[0]][start[1]:end[1]]
+    now = paper[start[0]:end[0]][start[1]:end[1]]
 
     cnt = 0
     for row in now:
