@@ -13,5 +13,3 @@ for i in range(1, len(data)):
 for _ in range(M):
     s, e = map(int, input().split())
     print(data_sum[e] - data_sum[s-1])
-
-print(data_sum)

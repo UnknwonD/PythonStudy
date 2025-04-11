@@ -5,22 +5,34 @@ from collections import deque
 def move(map, dir):
     max_val = 0
     
-    for i in range(n):
-        for j in range(n):
+    # dx = -1이거나 dy = -1일 때, for문을 반전해줘야됨
+    range_x = range(n-1, -1, -1) if dir[0] == 1 else range(n)
+    range_y = range(n-1, -1, -1) if dir[1] == 1 else range(n)
+        
+    for i in range_x:
+        for j in range_y:
             if map[j][i] == 0:
                 continue
             if map[j][i] == -1:
                 map[j][i] = 0
             
-            nx, ny = i, j
+            nx, ny = i + dir[0], j + dir[1]
             
-            # 1. 0이 아닐 때까지 이동
-            while map[ny][nx] == 0:
-                # 범위 밖으로 나가는 경우 종료
-                if 0 > nx or n <= nx or 0 > ny or n <= ny:
-                    nx, ny = i - dir[0], j - dir[1]
-                    break
-                nx, ny = i + dir[0], j + dir[1]
+            if 0 > nx or n <= nx or 0 > ny or n <= ny:
+                continue
+            else:
+                mocnt = 0
+                # 1. 0이 아닐 때까지 이동
+                while map[ny][nx] == 0:
+                    
+                    # 범위 밖으로 나가는 경우 종료
+                    nx, ny = nx + dir[0], ny + dir[1]
+                    
+                    if 0 > nx or n <= nx or 0 > ny or n <= ny:
+                        nx, ny = nx - dir[0], ny - dir[1]
+                        break
+                    mocnt += 1
+                # print(f"이동 횟수 : {mocnt}, {i}, {j} 도착 : {nx}, {ny}")
             
             # 이동을 못했다면 0이 없거나, 끝에 위치한 경우
             if nx == i and ny == j:
@@ -46,6 +58,12 @@ def move(map, dir):
             elif map[ny][nx] == -1:
                 map[ny][nx] = map[j][i]
                 map[j][i] = 0
+            # 다른 숫자를 만난 경우 - 그 숫자의 직전 위치에 이동
+            else:
+                nx, ny = nx - dir[0], ny - dir[1]
+                map[ny][nx] = map[j][i]
+                if (nx, ny) != (i, j):
+                    map[j][i] = 0
             
             max_val = max(max_val, map[ny][nx])
     return map, max_val
@@ -55,8 +73,7 @@ def bfs():
     global map_2024
     queue = deque()
     ans = 0
-    tmpcnt = 0
-    directions = ((-1, 0), (1, 0), (0, 1), (0, -1))
+    directions = ((0, -1), (-1, 0), (1, 0), (0, 1), )
     queue.append((map_2024, 0))
     
     while queue:
@@ -69,9 +86,6 @@ def bfs():
             next_map, max_val = move(n_map, (dx, dy))
             queue.append((next_map, cnt+1))
             ans = max(max_val, ans)
-            if tmpcnt < 200:
-                print(next_map, f"방향 : {dx}, {dy}, 시행 횟수 : {cnt}")
-            tmpcnt += 1
     
     return ans
         
@@ -88,5 +102,3 @@ for i in range(n):
             map_2024[i][j] = int(log2(map_2024[i][j]))
 
 print(2**bfs())
-
-
