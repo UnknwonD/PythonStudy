@@ -21,4 +21,3 @@ while last_idx != -1:
 result.reverse()
 print(max_len)
 print(*result)
-    

@@ -13,4 +13,3 @@ for i in range(N):
         stack[idx] = data[i]
 
 print(len(stack))
-print(' '.join(stack))
