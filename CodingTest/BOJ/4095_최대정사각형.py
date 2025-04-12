@@ -1,3 +1,5 @@
+import sys
+input = sys.stdin.readline
 ans = []
 while True:
     N, M = map(int, input().split())
@@ -10,14 +12,9 @@ while True:
     for y in range(N):
         for x in range(M):
             if data[y][x] == 1:
-                if y == x == 0:
-                    dp[y][x] = 1
-                else:
-                    dp[y][x] = min(dp[y][x-1], dp[y-1][x], dp[y-1][x-1]) + 1
-            
-            res = max(dp[y][x], res)
-    ans.append(res)
-            
+                dp[y][x] = min(dp[y][x-1], dp[y-1][x], dp[y-1][x-1]) + 1
+                res = max(dp[y][x], res)
+    ans.append(res) 
 
 for a in ans:
     print(a)
