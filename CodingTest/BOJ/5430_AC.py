@@ -9,7 +9,6 @@ for _ in range(T):
     n = int(input())
     arr_raw = input().strip()
 
-    # 입력 처리
     if arr_raw == '[]':
         arr = deque()
     else:
