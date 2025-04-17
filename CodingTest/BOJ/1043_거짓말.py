@@ -24,7 +24,7 @@ for _ in range(M):
 
 # 진실을 아는 사람들의 root 그룹을 구함
 truth_root = set(find(x) for x in truth)
-print(truth_root)
+# print(truth_root)
 
 ans = 0
 for party in parties:
