@@ -1,9 +1,10 @@
+# Union-find
 def find_parent(parent, x):
     if parent[x] != x:
         parent[x] = find_parent(parent, parent[x])
     return parent[x]
 
-def union_parent(parent, rank, a, b):
+def union(parent, rank, a, b):
     a = find_parent(parent, a)
     b = find_parent(parent, b)
 
@@ -13,32 +14,32 @@ def union_parent(parent, rank, a, b):
         elif rank[a] < rank[b]:
             parent[a] = b
         else:
-            parent[a] = b
-        
+            parent[b] = a
+            rank[a] += 1
+
+# 입력
 n = int(input())
 m = int(input())
-rank = [1 for _ in range(n+1)]
-parent = [i for i in range(n+1)]
 
-for i in range(1, n+1):
-    conn = list(map(int, input().split()))
-    
-    for j in range(len(conn)):
-        if conn[j] == 1:
-            union_parent(parent, rank, i, j)
+graph = [list(map(int, input().split())) for _ in range(n)]
 
-route = list(map(int, input().split()))
-now = find_parent(parent, route[0])
+target = list(map(int, input().split()))
 
-for r in range(1, len(route)):
-    target = find_parent(parent, route[r])
-    
-    if now != target:
-        now = -1
+parent = [i for i in range(n)]
+rank = [0 for _ in range(n)]
+
+for i in range(n):
+    for j in range(n):
+        if graph[i][j] == 1:
+            union(parent, rank, i, j)
+
+answer = "YES"
+cur = find_parent(parent, target[0]-1)
+
+for tart in target[1:]:
+    if cur == find_parent(parent, tart-1):
+        continue
+    else:
+        answer = "NO"
         break
-
-print(parent)
-if now == -1:
-    print("NO")
-else:
-    print("YES")
+print(answer)
